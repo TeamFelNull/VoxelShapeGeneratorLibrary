@@ -13,7 +13,7 @@ public class Main {
     private static final Gson GSON = new Gson();
 
     public static void main(String[] args) throws Exception {
-        VoxelShapeGenerator vsg = new VoxelShapeGenerator(new FileInputStream("sample.json"));
+        VoxelShapeGenerator vsg = new VoxelShapeGenerator(new FileInputStream("samples/sample.json"));
         JsonObject jo = vsg.generate();
         Files.write(Paths.get("gen.json"), GSON.toJson(jo).getBytes(StandardCharsets.UTF_8));
     }

@@ -10,6 +10,12 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+/**
+ * VoxelShape自動生成する
+ *
+ * @author MORIMORI0317
+ * @since 1.0
+ */
 public class VoxelShapeGenerator {
     private static final Gson GSON = new Gson();
     private final JsonObject model;
@@ -36,6 +42,11 @@ public class VoxelShapeGenerator {
         return modelInfo;
     }
 
+    /**
+     * 生成
+     *
+     * @return 生成したjson
+     */
     public JsonObject generate() {
         JsonObject jo = new JsonObject();
         jo.addProperty("time", System.currentTimeMillis());
