@@ -1,20 +1,57 @@
 package dev.felnull.vsgl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class Util {
-    public static byte[] streamToByteArray(InputStream stream) throws IOException {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        while (true) {
-            int len = stream.read(buffer);
-            if (len < 0) {
-                break;
+    public static Set<AABB> optimisationAabbs(List<AABB> aabbs) {
+        Set<AABB> optAabbs = new HashSet<>();
+        for (AABB aabb : aabbs) {
+            if (optAabbs.contains(aabb))
+                continue;
+            if (aabb instanceof AngledAABB) {
+                optAabbs.add(aabb);
+                continue;
             }
-            bout.write(buffer, 0, len);
+            boolean conFlg = false;
+            for (AABB tAabb : aabbs) {
+                if (tAabb instanceof AngledAABB) {
+                    continue;
+                }
+                if (aabb.compareTo(tAabb) == -1) {
+                    conFlg = true;
+                    break;
+                }
+            }
+            if (conFlg)
+                continue;
+            optAabbs.add(aabb);
         }
-        return bout.toByteArray();
+        boolean upFlg;
+        do {
+            upFlg = false;
+            AABB comb = null;
+            AABB tcomb = null;
+            for (AABB optAabb : optAabbs) {
+                for (AABB tOptAabb : optAabbs) {
+                    if (optAabb == tOptAabb) continue;
+                    if (optAabb.canCombine(tOptAabb)) {
+                        comb = optAabb;
+                        tcomb = tOptAabb;
+                        break;
+                    }
+                }
+                if (comb != null) break;
+            }
+            if (comb != null) {
+                optAabbs.remove(comb);
+                optAabbs.remove(tcomb);
+                optAabbs.add(comb.combined(tcomb));
+                upFlg = true;
+            }
+        } while (upFlg);
+
+        return optAabbs;
     }
 }

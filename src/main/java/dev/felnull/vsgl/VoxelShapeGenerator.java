@@ -2,13 +2,15 @@ package dev.felnull.vsgl;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.stream.StreamSupport;
 
 /**
  * VoxelShape自動生成する
@@ -21,8 +23,8 @@ public class VoxelShapeGenerator {
     private final JsonObject model;
     private final ModelInfo modelInfo;
 
-    public VoxelShapeGenerator(InputStream stream) throws IOException {
-        this(GSON.fromJson(new String(Util.streamToByteArray(new BufferedInputStream(stream)), StandardCharsets.UTF_8), JsonObject.class));
+    public VoxelShapeGenerator(InputStream stream) {
+        this(GSON.fromJson(new InputStreamReader(new BufferedInputStream(stream)), JsonObject.class));
     }
 
     public VoxelShapeGenerator(byte[] bytes) {
@@ -31,6 +33,7 @@ public class VoxelShapeGenerator {
 
     public VoxelShapeGenerator(JsonObject model) {
         this.model = Objects.requireNonNull(model);
+        checkJsonModel(model);
         this.modelInfo = new ModelInfo(model);
     }
 
@@ -43,23 +46,24 @@ public class VoxelShapeGenerator {
     }
 
     /**
-     * 生成
+     * バージョン1のJsonを生成
      *
      * @return 生成したjson
      */
-    public JsonObject generate() {
+    public JsonObject generateV1() {
+        if (modelInfo.isAngled())
+            throw new VoxelShapeException("V1 has not support angled cube model");
+
         JsonObject jo = new JsonObject();
         jo.addProperty("time", System.currentTimeMillis());
         jo.addProperty("meta", "VoxelShapeGeneratorLibrary V" + BuildIn.VERSION);
         jo.addProperty("version", 1);
 
         JsonArray shapes = new JsonArray();
-        modelInfo.getElements().forEach(n -> {
+        modelInfo.getAabbs().forEach(n -> {
             JsonArray aabb = new JsonArray();
-            JsonArray fromAry = n.getAsJsonArray("from");
-            Vec3d from = new Vec3d(fromAry.get(0).getAsDouble(), fromAry.get(1).getAsDouble(), fromAry.get(2).getAsDouble());
-            JsonArray toAry = n.getAsJsonArray("to");
-            Vec3d to = new Vec3d(toAry.get(0).getAsDouble(), toAry.get(1).getAsDouble(), toAry.get(2).getAsDouble());
+            Vec3d from = n.getFrom();
+            Vec3d to = n.getTo();
             aabb.add(from.getX());
             aabb.add(from.getY());
             aabb.add(from.getZ());
@@ -72,4 +76,54 @@ public class VoxelShapeGenerator {
         jo.add("shapes", shapes);
         return jo;
     }
+
+    private void checkJsonModel(JsonObject jo) {
+        if (!(jo.get("elements") instanceof JsonArray) || !StreamSupport.stream(jo.getAsJsonArray("elements").spliterator(), false).map(JsonElement::getAsJsonObject).allMatch(element -> {
+            if (!(element.get("from") instanceof JsonArray) || !(element.get("to") instanceof JsonArray))
+                return false;
+
+            var from = element.getAsJsonArray("from");
+            var to = element.getAsJsonArray("to");
+
+            if (from.size() != 3 || to.size() != 3)
+                return false;
+            try {
+                from.get(0).getAsDouble();
+                to.get(0).getAsDouble();
+                from.get(1).getAsDouble();
+                to.get(1).getAsDouble();
+                from.get(2).getAsDouble();
+                to.get(2).getAsDouble();
+            } catch (Exception ex) {
+                return false;
+            }
+
+            if (element.get("rotation") == null)
+                return true;
+
+            if (!(element.get("rotation") instanceof JsonObject))
+                return false;
+
+            var rotation = element.getAsJsonObject("rotation");
+
+            try {
+                rotation.get("angle").getAsDouble();
+                var axis = AngledAABB.Axis.getAxisByName(rotation.get("axis").getAsString());
+                if (axis == null)
+                    return false;
+                if (!(rotation.get("origin") instanceof JsonArray))
+                    return false;
+                var origin = rotation.getAsJsonArray("origin");
+                origin.get(0).getAsDouble();
+                origin.get(1).getAsDouble();
+                origin.get(2).getAsDouble();
+            } catch (Exception ex) {
+                return false;
+            }
+
+            return true;
+        }))
+            throw new VoxelShapeException("No json model");
+    }
+
 }
