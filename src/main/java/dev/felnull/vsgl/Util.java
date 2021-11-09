@@ -1,10 +1,22 @@
 package dev.felnull.vsgl;
 
+import dev.felnull.vsgl.physics.AABB;
+import dev.felnull.vsgl.physics.AngledAABB;
+import dev.felnull.vsgl.physics.Edge;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class Util {
+    public static Set<Edge> generateEdges(List<AABB> aabbs) {
+        Set<Edge> edges = new HashSet<>();
+        for (AABB aabb : aabbs) {
+
+        }
+        return edges;
+    }
+
     public static Set<AABB> optimisationAabbs(List<AABB> aabbs) {
         Set<AABB> optAabbs = new HashSet<>();
         for (AABB aabb : aabbs) {
@@ -54,4 +66,5 @@ public class Util {
 
         return optAabbs;
     }
+
 }

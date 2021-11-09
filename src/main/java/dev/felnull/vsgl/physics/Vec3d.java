@@ -1,4 +1,4 @@
-package dev.felnull.vsgl;
+package dev.felnull.vsgl.physics;
 
 import java.util.Objects;
 
@@ -7,7 +7,7 @@ public class Vec3d {
     private final double y;
     private final double z;
 
-    protected Vec3d(double x, double y, double z) {
+    public Vec3d(double x, double y, double z) {
         this.x = x;
         this.y = y;
         this.z = z;

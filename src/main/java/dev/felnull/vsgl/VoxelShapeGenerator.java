@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import dev.felnull.vsgl.physics.AngledAABB;
+import dev.felnull.vsgl.physics.Vec3d;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -74,6 +76,53 @@ public class VoxelShapeGenerator {
         });
 
         jo.add("shapes", shapes);
+        return jo;
+    }
+
+    /**
+     * バージョン2のJsonを生成
+     *
+     * @return 生成したjson
+     */
+    public JsonObject generateV2() {
+        JsonObject jo = new JsonObject();
+        jo.addProperty("time", System.currentTimeMillis());
+        jo.addProperty("meta", "VoxelShapeGeneratorLibrary V" + BuildIn.VERSION);
+        jo.addProperty("version", 2);
+
+        JsonArray shapes = new JsonArray();
+        modelInfo.getAabbs().forEach(n -> {
+            JsonArray aabb = new JsonArray();
+            Vec3d from = n.getFrom();
+            Vec3d to = n.getTo();
+            aabb.add(from.getX());
+            aabb.add(from.getY());
+            aabb.add(from.getZ());
+            aabb.add(to.getX());
+            aabb.add(to.getY());
+            aabb.add(to.getZ());
+            shapes.add(aabb);
+        });
+        jo.add("shapes", shapes);
+
+        JsonArray edges = new JsonArray();
+
+        modelInfo.getAabbs().forEach(m -> {
+            m.getEdges().forEach(n -> {
+                JsonArray aabb = new JsonArray();
+                Vec3d from = n.getStart();
+                Vec3d to = n.getEnd();
+                aabb.add(from.getX());
+                aabb.add(from.getY());
+                aabb.add(from.getZ());
+                aabb.add(to.getX());
+                aabb.add(to.getY());
+                aabb.add(to.getZ());
+                edges.add(aabb);
+            });
+        });
+
+        jo.add("edges", edges);
         return jo;
     }
 

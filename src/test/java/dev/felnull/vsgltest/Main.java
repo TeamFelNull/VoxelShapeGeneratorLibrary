@@ -14,7 +14,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         VoxelShapeGenerator vsg = new VoxelShapeGenerator(new FileInputStream("samples/sample.json"));
-        JsonObject jo = vsg.generateV1();
+        JsonObject jo = vsg.generateV2();
         Files.write(Paths.get("gen.json"), GSON.toJson(jo).getBytes(StandardCharsets.UTF_8));
     }
 }

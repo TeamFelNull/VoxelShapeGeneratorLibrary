@@ -1,11 +1,11 @@
-package dev.felnull.vsgl;
+package dev.felnull.vsgl.physics;
 
 import java.util.Objects;
 
 public class AngledAABB extends AABB {
     private final Rotation rotation;
 
-    protected AngledAABB(double angle, Axis axis, Vec3d origin, Vec3d from, Vec3d to) {
+    public AngledAABB(double angle, Axis axis, Vec3d origin, Vec3d from, Vec3d to) {
         super(from, to);
         this.rotation = new Rotation(angle, axis, origin);
     }
