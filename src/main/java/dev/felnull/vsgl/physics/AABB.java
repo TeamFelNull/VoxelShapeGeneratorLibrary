@@ -1,5 +1,7 @@
 package dev.felnull.vsgl.physics;
 
+import dev.felnull.vsgl.Util;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -89,6 +91,14 @@ public class AABB {
         return from.getZ() > to.getZ() ? from : to;
     }
 
+    public Vec3d getRelativeFrom() {
+        return new Vec3d(getXLeftPos().getX(), getDownPos().getY(), getZLeftPos().getZ());
+    }
+
+    public Vec3d getRelativeTo() {
+        return new Vec3d(getXRightPos().getX(), getUpPos().getY(), getZRightPos().getZ());
+    }
+
     public List<Edge> getEdges() {
         List<Edge> edges = new ArrayList<>();
         for (Edge.EdgeLocation value : Edge.EdgeLocation.values()) {
@@ -166,7 +176,84 @@ public class AABB {
             }
         }
 
-        return new Edge(new Vec3d(stX, stY, stZ), new Vec3d(enX, enY, enZ), edgeLocation, num);
+        return new Edge(new Vec3d(stX, stY, stZ), new Vec3d(enX, enY, enZ));
+    }
+
+    public PenetrationPosEntry getPenetration(Vec3d start, Vec3d end) {
+        if (isInPos(start) && isInPos(end))
+            return new PenetrationPosEntry(null, null);
+
+        for (FaceDirection value : FaceDirection.values()) {
+            Vec3d cross = getCrossPos(value, start, end);
+            if (cross != null)
+                System.out.println(start + ":" + end);
+        }
+
+        return null;
+    }
+
+    public boolean isInPos(Vec3d pos) {
+        Vec3d from = getRelativeFrom();
+        Vec3d to = getRelativeTo();
+        boolean fromFlg = pos.getX() > from.getX() && pos.getY() > from.getY() && pos.getZ() > from.getZ();
+        if (!fromFlg)
+            return false;
+        return pos.getX() < to.getX() && pos.getY() < to.getY() && pos.getZ() < to.getZ();
+    }
+
+    public Vec3d getCrossPos(FaceDirection direction, Vec3d start, Vec3d end) {
+        FacePos facePos = getFace(direction);
+        if (facePos == null) return null;
+        Vec2d xc;
+        Vec2d zc;
+        switch (direction.getAxis()) {
+            case Y:
+                xc = Util.getCrossPoint(new Vec2d(facePos.start.getX(), facePos.start.getY()), new Vec2d(facePos.end.getX(), facePos.end.getY()), new Vec2d(start.getX(), start.getY()), new Vec2d(end.getX(), end.getY()));
+                zc = Util.getCrossPoint(new Vec2d(facePos.start.getZ(), facePos.start.getY()), new Vec2d(facePos.end.getZ(), facePos.end.getY()), new Vec2d(start.getZ(), start.getY()), new Vec2d(end.getZ(), end.getY()));
+                break;
+            case X:
+                xc = Util.getCrossPoint(new Vec2d(facePos.start.getY(), facePos.start.getX()), new Vec2d(facePos.end.getY(), facePos.end.getX()), new Vec2d(start.getY(), start.getX()), new Vec2d(end.getY(), end.getX()));
+                zc = Util.getCrossPoint(new Vec2d(facePos.start.getZ(), facePos.start.getX()), new Vec2d(facePos.end.getZ(), facePos.end.getX()), new Vec2d(start.getZ(), start.getX()), new Vec2d(end.getZ(), end.getX()));
+                break;
+            case Z:
+                xc = Util.getCrossPoint(new Vec2d(facePos.start.getY(), facePos.start.getZ()), new Vec2d(facePos.end.getY(), facePos.end.getZ()), new Vec2d(start.getY(), start.getZ()), new Vec2d(end.getY(), end.getZ()));
+                zc = Util.getCrossPoint(new Vec2d(facePos.start.getX(), facePos.start.getZ()), new Vec2d(facePos.end.getX(), facePos.end.getZ()), new Vec2d(start.getX(), start.getZ()), new Vec2d(end.getX(), end.getZ()));
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + direction.getAxis());
+        }
+        if (xc == null || zc == null) return null;
+        switch (direction.getAxis()) {
+            case Y:
+                if (xc.getX() != facePos.start.getX() && xc.getX() != facePos.end.getX() && zc.getX() != facePos.start.getZ() && zc.getX() != facePos.end.getZ())
+                    return new Vec3d(xc.getX(), facePos.getStart().getY(), zc.getX());
+            case X:
+                if (xc.getX() != facePos.start.getZ() && xc.getX() != facePos.end.getZ() && zc.getX() != facePos.start.getY() && zc.getX() != facePos.end.getY())
+                    return new Vec3d(facePos.getStart().getX(), xc.getX(), zc.getX());
+            case Z:
+                if (xc.getX() != facePos.start.getX() && xc.getX() != facePos.end.getX() && zc.getX() != facePos.start.getY() && zc.getX() != facePos.end.getY())
+                    return new Vec3d(xc.getX(), xc.getX(), facePos.getStart().getZ());
+            default:
+                return null;
+        }
+    }
+
+    public FacePos getFace(FaceDirection direction) {
+        switch (direction) {
+            case UP:
+                return new FacePos(getRelativeTo(), new Vec3d(getRelativeFrom().getX(), getRelativeTo().getY(), getRelativeFrom().getZ()));
+            case DOWN:
+                return new FacePos(new Vec3d(getRelativeTo().getX(), getRelativeFrom().getY(), getRelativeTo().getZ()), getRelativeFrom());
+            case NORTH:
+                return new FacePos(new Vec3d(getRelativeTo().getX(), getRelativeTo().getY(), getRelativeFrom().getZ()), getRelativeFrom());
+            case SOUTH:
+                return new FacePos(getRelativeTo(), new Vec3d(getRelativeFrom().getX(), getRelativeFrom().getY(), getRelativeTo().getZ()));
+            case EAST:
+                return new FacePos(new Vec3d(getRelativeFrom().getX(), getRelativeTo().getY(), getRelativeTo().getZ()), getRelativeFrom());
+            case WEST:
+                return new FacePos(getRelativeTo(), new Vec3d(getRelativeTo().getX(), getRelativeFrom().getY(), getRelativeFrom().getZ()));
+        }
+        return null;
     }
 
     @Override
@@ -188,5 +275,118 @@ public class AABB {
                 "from=" + from +
                 ", to=" + to +
                 '}';
+    }
+
+    public static class PenetrationPosEntry {
+        private final Vec3d start;
+        private final Vec3d end;
+
+        public PenetrationPosEntry(Vec3d start, Vec3d end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public Vec3d getStart() {
+            return start;
+        }
+
+        public Vec3d getEnd() {
+            return end;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PenetrationPosEntry that = (PenetrationPosEntry) o;
+            return Objects.equals(start, that.start) && Objects.equals(end, that.end);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(start, end);
+        }
+    }
+
+    public static enum FaceDirection {
+        UP,
+        DOWN,
+        SOUTH,
+        NORTH,
+        WEST,
+        EAST;
+
+        public FaceDirection revers() {
+            switch (this) {
+                case UP:
+                    return DOWN;
+                case DOWN:
+                    return UP;
+                case SOUTH:
+                    return NORTH;
+                case NORTH:
+                    return SOUTH;
+                case EAST:
+                    return WEST;
+                case WEST:
+                    return EAST;
+            }
+            return NORTH;
+        }
+
+        public AngledAABB.Axis getAxis() {
+            switch (this) {
+                case UP:
+                case DOWN:
+                    return AngledAABB.Axis.Y;
+                case SOUTH:
+                case NORTH:
+                    return AngledAABB.Axis.Z;
+                case EAST:
+                case WEST:
+                    return AngledAABB.Axis.X;
+            }
+            return AngledAABB.Axis.X;
+        }
+
+    }
+
+    private static class FacePos {
+        private final Vec3d start;
+        private final Vec3d end;
+
+        public FacePos(Vec3d start, Vec3d end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public Vec3d getEnd() {
+            return end;
+        }
+
+        public Vec3d getStart() {
+            return start;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            FacePos facePos = (FacePos) o;
+            return Objects.equals(start, facePos.start) && Objects.equals(end, facePos.end);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(start, end);
+        }
+
+        @Override
+        public String toString() {
+            return "FacePos{" +
+                    "start=" + start +
+                    ", end=" + end +
+                    '}';
+        }
     }
 }

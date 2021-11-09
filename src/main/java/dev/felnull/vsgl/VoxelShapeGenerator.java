@@ -107,19 +107,17 @@ public class VoxelShapeGenerator {
 
         JsonArray edges = new JsonArray();
 
-        modelInfo.getAabbs().forEach(m -> {
-            m.getEdges().forEach(n -> {
-                JsonArray aabb = new JsonArray();
-                Vec3d from = n.getStart();
-                Vec3d to = n.getEnd();
-                aabb.add(from.getX());
-                aabb.add(from.getY());
-                aabb.add(from.getZ());
-                aabb.add(to.getX());
-                aabb.add(to.getY());
-                aabb.add(to.getZ());
-                edges.add(aabb);
-            });
+        Util.generateEdges(modelInfo.getAabbs()).forEach(n -> {
+            JsonArray aabb = new JsonArray();
+            Vec3d from = n.getStart();
+            Vec3d to = n.getEnd();
+            aabb.add(from.getX());
+            aabb.add(from.getY());
+            aabb.add(from.getZ());
+            aabb.add(to.getX());
+            aabb.add(to.getY());
+            aabb.add(to.getZ());
+            edges.add(aabb);
         });
 
         jo.add("edges", edges);

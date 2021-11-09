@@ -3,18 +3,48 @@ package dev.felnull.vsgl;
 import dev.felnull.vsgl.physics.AABB;
 import dev.felnull.vsgl.physics.AngledAABB;
 import dev.felnull.vsgl.physics.Edge;
+import dev.felnull.vsgl.physics.Vec2d;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Util {
-    public static Set<Edge> generateEdges(List<AABB> aabbs) {
-        Set<Edge> edges = new HashSet<>();
+    public static Set<Edge> generateEdges(Set<AABB> aabbs) {
+        Map<Edge, AABB> edges = new HashMap<>();
         for (AABB aabb : aabbs) {
-
+            for (Edge edge : aabb.getEdges()) {
+                edges.put(edge, aabb);
+            }
         }
-        return edges;
+        boolean upFlg;
+        do {
+            upFlg = false;
+            Edge tEdge = null;
+            AABB.PenetrationPosEntry penet = null;
+            for (Edge edge : edges.keySet()) {
+                AABB edgAabb = edges.get(edge);
+                for (AABB aabb : aabbs) {
+                    if (aabb == edgAabb) continue;
+                    AABB.PenetrationPosEntry pe = aabb.getPenetration(edge.getStart(), edge.getEnd());
+                    if (pe != null) {
+                        tEdge = edge;
+                        penet = pe;
+                        break;
+                    }
+                }
+                if (tEdge != null) break;
+            }
+            if (tEdge != null) {
+                AABB edbb = edges.remove(tEdge);
+                if (penet.getStart() != null) {
+                    edges.put(new Edge(tEdge.getStart(), penet.getStart()), edbb);
+                }
+                if (penet.getEnd() != null) {
+                    edges.put(new Edge(penet.getEnd(), tEdge.getEnd()), edbb);
+                }
+                upFlg = true;
+            }
+        } while (upFlg);
+        return edges.keySet();
     }
 
     public static Set<AABB> optimisationAabbs(List<AABB> aabbs) {
@@ -67,4 +97,35 @@ public class Util {
         return optAabbs;
     }
 
+    public static Vec2d getCrossPoint(Vec2d start1, Vec2d end1, Vec2d start2, Vec2d end2) {
+        double a = start1.getX();
+        double b = start1.getY();
+        double c = end1.getX();
+        double d = end1.getY();
+        double e = start2.getX();
+        double f = start2.getY();
+        double g = end2.getX();
+        double h = end2.getY();
+
+        double ux = (f * g - e * h) * (c - a) - (b * c - a * d) * (g - e);
+        double sx = (d - b) * (g - e) - (c - a) * (h - f);
+
+        double uy = (f * g - e * h) * (d - b) - (b * c - a * d) * (h - f);
+        double sy = (d - b) * (g - e) - (c - a) * (h - f);
+
+        double x = ux / sx;
+        double y = uy / sy;
+
+        if (Double.isInfinite(x) || Double.isInfinite(y) || Double.isNaN(x) || Double.isNaN(y))
+            return null;
+
+        Vec2d poi = new Vec2d(x, y);
+
+        boolean xFlg = poi.getX() >= Math.min(start1.getX(), end1.getX()) && poi.getX() >= Math.min(start2.getX(), end2.getX()) && poi.getX() <= Math.max(start1.getX(), end1.getX()) && poi.getX() <= Math.max(start2.getX(), end2.getX());
+        boolean yFlg = poi.getX() >= Math.min(start1.getY(), end1.getY()) && poi.getY() >= Math.min(start2.getY(), end2.getY()) && poi.getY() <= Math.max(start1.getY(), end1.getY()) && poi.getY() <= Math.max(start2.getY(), end2.getY());
+        if (xFlg && yFlg)
+            return poi;
+
+        return null;
+    }
 }

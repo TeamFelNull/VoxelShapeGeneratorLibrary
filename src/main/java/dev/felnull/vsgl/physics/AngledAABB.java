@@ -1,5 +1,6 @@
 package dev.felnull.vsgl.physics;
 
+import java.util.List;
 import java.util.Objects;
 
 public class AngledAABB extends AABB {
@@ -60,6 +61,10 @@ public class AngledAABB extends AABB {
         }
     }
 
+    @Override
+    public List<Edge> getEdges() {
+        return List.of();
+    }
 
     public static class Rotation {
         protected final double angle;

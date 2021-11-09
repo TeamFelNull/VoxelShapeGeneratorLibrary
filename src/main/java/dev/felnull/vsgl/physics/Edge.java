@@ -5,14 +5,10 @@ import java.util.Objects;
 public class Edge {
     private final Vec3d start;
     private final Vec3d end;
-    private final EdgeLocation edgeLocation;
-    private final int number;
 
-    public Edge(Vec3d start, Vec3d end, EdgeLocation edgeLocation, int number) {
+    public Edge(Vec3d start, Vec3d end) {
         this.start = start;
         this.end = end;
-        this.edgeLocation = edgeLocation;
-        this.number = number;
     }
 
     public Vec3d getEnd() {
@@ -23,25 +19,17 @@ public class Edge {
         return start;
     }
 
-    public EdgeLocation getEdgeLocation() {
-        return edgeLocation;
-    }
-
-    public int getNumber() {
-        return number;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Edge edge = (Edge) o;
-        return number == edge.number && Objects.equals(start, edge.start) && Objects.equals(end, edge.end) && edgeLocation == edge.edgeLocation;
+        return Objects.equals(start, edge.start) && Objects.equals(end, edge.end);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(start, end, edgeLocation, number);
+        return Objects.hash(start, end);
     }
 
     @Override
@@ -49,8 +37,6 @@ public class Edge {
         return "Edge{" +
                 "start=" + start +
                 ", end=" + end +
-                ", edgeLocation=" + edgeLocation +
-                ", number=" + number +
                 '}';
     }
 
