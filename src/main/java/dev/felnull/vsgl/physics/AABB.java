@@ -183,13 +183,28 @@ public class AABB {
         if (isInPos(start) && isInPos(end))
             return new PenetrationPosEntry(null, null);
 
+        List<Vec3d> poss = new ArrayList<>();
         for (FaceDirection value : FaceDirection.values()) {
             Vec3d cross = getCrossPos(value, start, end);
             if (cross != null)
-                System.out.println(start + ":" + end);
+                poss.add(cross);
+            if (poss.size() >= 2)
+                break;
         }
+        if (poss.isEmpty())
+            return null;
 
-        return null;
+        if (poss.size() == 1) {
+            Vec3d pos = poss.get(0);
+            if (pos.getDistance(start) <= pos.getDistance(end)) {
+                return new PenetrationPosEntry(pos, null);
+            } else {
+                return new PenetrationPosEntry(null, pos);
+            }
+        }
+        Vec3d pos1 = poss.get(0);
+        Vec3d pos2 = poss.get(1);
+        return new PenetrationPosEntry(pos1.getDistance(start) <= pos2.getDistance(start) ? pos1 : pos2, pos1.getDistance(end) <= pos2.getDistance(end) ? pos1 : pos2);
     }
 
     public boolean isInPos(Vec3d pos) {

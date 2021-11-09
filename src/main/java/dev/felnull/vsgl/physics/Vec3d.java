@@ -33,6 +33,10 @@ public class Vec3d {
         return Double.compare(vec3d.x, x) == 0 && Double.compare(vec3d.y, y) == 0 && Double.compare(vec3d.z, z) == 0;
     }
 
+    public double getDistance(Vec3d vec) {
+        return Math.abs(Math.sqrt(Math.pow(vec.x - x, 2) + Math.pow(vec.y - y, 2) + Math.pow(vec.z - z, 2)));
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(x, y, z);
