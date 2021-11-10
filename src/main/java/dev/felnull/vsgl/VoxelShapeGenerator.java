@@ -124,7 +124,7 @@ public class VoxelShapeGenerator {
 
         jo.add("edges", edges);
 
-        jo.addProperty("processing time", System.currentTimeMillis() - st);
+        jo.addProperty("elapsed", System.currentTimeMillis() - st);
         return jo;
     }
 
