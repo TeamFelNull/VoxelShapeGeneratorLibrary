@@ -186,14 +186,14 @@ public class AABB {
         List<Vec3d> poss = new ArrayList<>();
         for (FaceDirection value : FaceDirection.values()) {
             Vec3d cross = getCrossPos(value, start, end);
-            if (cross != null)
+            if (cross != null) {
                 poss.add(cross);
+            }
             if (poss.size() >= 2)
                 break;
         }
         if (poss.isEmpty())
             return null;
-
         if (poss.size() == 1) {
             Vec3d pos = poss.get(0);
             if (pos.getDistance(start) <= pos.getDistance(end)) {

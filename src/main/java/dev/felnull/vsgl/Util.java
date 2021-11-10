@@ -35,12 +35,13 @@ public class Util {
             }
             if (tEdge != null) {
                 AABB edbb = edges.remove(tEdge);
-                if (penet.getStart() != null) {
+                //  System.out.println(tEdge);
+             /*    if (penet.getStart() != null) {
                     edges.put(new Edge(tEdge.getStart(), penet.getStart()), edbb);
                 }
                 if (penet.getEnd() != null) {
                     edges.put(new Edge(penet.getEnd(), tEdge.getEnd()), edbb);
-                }
+                }*/
                 upFlg = true;
             }
         } while (upFlg);
@@ -121,11 +122,20 @@ public class Util {
 
         Vec2d poi = new Vec2d(x, y);
 
-        boolean xFlg = poi.getX() >= Math.min(start1.getX(), end1.getX()) && poi.getX() >= Math.min(start2.getX(), end2.getX()) && poi.getX() <= Math.max(start1.getX(), end1.getX()) && poi.getX() <= Math.max(start2.getX(), end2.getX());
-        boolean yFlg = poi.getX() >= Math.min(start1.getY(), end1.getY()) && poi.getY() >= Math.min(start2.getY(), end2.getY()) && poi.getY() <= Math.max(start1.getY(), end1.getY()) && poi.getY() <= Math.max(start2.getY(), end2.getY());
-        if (xFlg && yFlg)
+        //      boolean xFlg = poi.getX() >= start1.getX() && poi.getX() >= start2.getX() && poi.getX() <= end1.getX() && poi.getX() <= end2.getX();
+//        boolean yFlg = poi.getX() >= start1.getY() && poi.getY() >= start2.getY() && poi.getY() <= end1.getY() && poi.getY() <= end2.getY();
+
+        boolean x1Flg = isInnerNum(poi.getX(), start1.getX(), end1.getX());
+        boolean y1Flg = isInnerNum(poi.getY(), start1.getY(), end1.getY());
+        boolean x2Flg = isInnerNum(poi.getX(), start2.getX(), end2.getX());
+        boolean y2Flg = isInnerNum(poi.getY(), start2.getY(), end2.getY());
+        if (x1Flg && y1Flg && x2Flg && y2Flg)
             return poi;
 
         return null;
+    }
+
+    public static boolean isInnerNum(double target, double num, double num2) {
+        return Math.min(num, num2) <= target && target <= Math.max(num, num2);
     }
 }
