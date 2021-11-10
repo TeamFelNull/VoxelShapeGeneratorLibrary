@@ -204,7 +204,11 @@ public class AABB {
         }
         Vec3d pos1 = poss.get(0);
         Vec3d pos2 = poss.get(1);
-        return new PenetrationPosEntry(pos1.getDistance(start) <= pos2.getDistance(start) ? pos1 : pos2, pos1.getDistance(end) <= pos2.getDistance(end) ? pos1 : pos2);
+
+        Vec3d st = pos1.getDistance(start) <= pos2.getDistance(start) ? pos1 : pos2;
+        Vec3d en = st == pos1 ? pos2 : pos1;
+
+        return new PenetrationPosEntry(st, en);
     }
 
     public boolean isInPos(Vec3d pos) {
@@ -238,19 +242,26 @@ public class AABB {
                 throw new IllegalStateException("Unexpected value: " + direction.getAxis());
         }
         if (xc == null || zc == null) return null;
+        Vec3d pos;
         switch (direction.getAxis()) {
             case Y:
-                if (xc.getX() != facePos.start.getX() && xc.getX() != facePos.end.getX() && zc.getX() != facePos.start.getZ() && zc.getX() != facePos.end.getZ())
-                    return new Vec3d(xc.getX(), facePos.getStart().getY(), zc.getX());
+                //   if (xc.getX() != facePos.start.getX() && xc.getX() != facePos.end.getX() && zc.getX() != facePos.start.getZ() && zc.getX() != facePos.end.getZ())
+                pos = new Vec3d(xc.getX(), facePos.getStart().getY(), zc.getX());
+                break;
             case X:
-                if (xc.getX() != facePos.start.getZ() && xc.getX() != facePos.end.getZ() && zc.getX() != facePos.start.getY() && zc.getX() != facePos.end.getY())
-                    return new Vec3d(facePos.getStart().getX(), xc.getX(), zc.getX());
+                //     if (xc.getX() != facePos.start.getZ() && xc.getX() != facePos.end.getZ() && zc.getX() != facePos.start.getY() && zc.getX() != facePos.end.getY())
+                pos = new Vec3d(facePos.getStart().getX(), xc.getX(), zc.getX());
+                break;
             case Z:
-                if (xc.getX() != facePos.start.getX() && xc.getX() != facePos.end.getX() && zc.getX() != facePos.start.getY() && zc.getX() != facePos.end.getY())
-                    return new Vec3d(xc.getX(), xc.getX(), facePos.getStart().getZ());
+                //    if (xc.getX() != facePos.start.getX() && xc.getX() != facePos.end.getX() && zc.getX() != facePos.start.getY() && zc.getX() != facePos.end.getY())
+                pos = new Vec3d(xc.getX(), xc.getX(), facePos.getStart().getZ());
+                break;
             default:
-                return null;
+                throw new IllegalStateException("Unexpected value: " + direction.getAxis());
         }
+        if (pos.equals(start) || pos.equals(end))
+            return null;
+        return pos;
     }
 
     public FacePos getFace(FaceDirection direction) {
@@ -320,6 +331,14 @@ public class AABB {
         @Override
         public int hashCode() {
             return Objects.hash(start, end);
+        }
+
+        @Override
+        public String toString() {
+            return "PenetrationPosEntry{" +
+                    "start=" + start +
+                    ", end=" + end +
+                    '}';
         }
     }
 

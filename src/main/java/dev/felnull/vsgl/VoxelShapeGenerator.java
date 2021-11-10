@@ -85,6 +85,8 @@ public class VoxelShapeGenerator {
      * @return 生成したjson
      */
     public JsonObject generateV2() {
+        long st = System.currentTimeMillis();
+
         JsonObject jo = new JsonObject();
         jo.addProperty("time", System.currentTimeMillis());
         jo.addProperty("meta", "VoxelShapeGeneratorLibrary V" + BuildIn.VERSION);
@@ -121,6 +123,8 @@ public class VoxelShapeGenerator {
         });
 
         jo.add("edges", edges);
+
+        jo.addProperty("processing time", System.currentTimeMillis() - st);
         return jo;
     }
 

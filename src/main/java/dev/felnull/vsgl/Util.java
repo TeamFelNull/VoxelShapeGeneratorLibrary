@@ -35,13 +35,12 @@ public class Util {
             }
             if (tEdge != null) {
                 AABB edbb = edges.remove(tEdge);
-                //  System.out.println(tEdge);
-             /*    if (penet.getStart() != null) {
+                if (penet.getStart() != null) {
                     edges.put(new Edge(tEdge.getStart(), penet.getStart()), edbb);
                 }
                 if (penet.getEnd() != null) {
                     edges.put(new Edge(penet.getEnd(), tEdge.getEnd()), edbb);
-                }*/
+                }
                 upFlg = true;
             }
         } while (upFlg);
@@ -121,9 +120,6 @@ public class Util {
             return null;
 
         Vec2d poi = new Vec2d(x, y);
-
-        //      boolean xFlg = poi.getX() >= start1.getX() && poi.getX() >= start2.getX() && poi.getX() <= end1.getX() && poi.getX() <= end2.getX();
-//        boolean yFlg = poi.getX() >= start1.getY() && poi.getY() >= start2.getY() && poi.getY() <= end1.getY() && poi.getY() <= end2.getY();
 
         boolean x1Flg = isInnerNum(poi.getX(), start1.getX(), end1.getX());
         boolean y1Flg = isInnerNum(poi.getY(), start1.getY(), end1.getY());
